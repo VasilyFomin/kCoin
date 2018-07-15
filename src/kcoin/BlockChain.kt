@@ -3,8 +3,9 @@ package kcoin
 class BlockChain {
 
     private val blocks: MutableList<Block> = mutableListOf()
-    private val difficulty = 3
+    private val difficulty = 2
     private val validPrefix = "0".repeat(difficulty)
+    var UTXO: MutableMap<String, TransactionOutput> = mutableMapOf()
 
     fun isValid() : Boolean {
         when {
@@ -46,7 +47,14 @@ class BlockChain {
         }
 
         println("Mined : $minedBlock")
+        updateUTXO(minedBlock)
 
         return minedBlock
+    }
+
+    private fun updateUTXO(block: Block) {
+
+        block.transactions.flatMap { it.inputs }.map { it.hash }.forEach { UTXO.remove(it) }
+        UTXO.putAll(block.transactions.flatMap { it.outputs }.associateBy { it.hash })
     }
 }
